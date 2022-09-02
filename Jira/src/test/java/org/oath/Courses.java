@@ -1,12 +1,18 @@
 package org.oath;
 import io.restassured.RestAssured;
 import io.restassured.filter.session.SessionFilter;
+import io.restassured.parsing.Parser;
 import io.restassured.path.json.JsonPath;
 import static io.restassured.RestAssured.*;
+
+import java.util.List;
+
+import org.pojo.AppResponse;
+import org.pojo.webAutomation;
 public class Courses {
 	public static void main(String[] args) {
 
-		String url="https://rahulshettyacademy.com/getCourse.php?code=4%2F0AdQt8qgsG_qApB3mLekbYqWQ180GFNOjV9x4PguW_Ok4sok6gpUpamLp6tFuQVv-1WDB8Q&scope=email+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none";
+		String url="https://rahulshettyacademy.com/getCourse.php?code=4%2F0AdQt8qiniKubQgp0ITY_bflkDTGfSwy7c3NQvLASgJRAGhGm_aFtndlbePTb8igbVwaeqg&scope=email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=none";
 	String[]s=	url.split("code=");
 	String[]s1=	s[1].split("&scope=");
 
@@ -22,42 +28,16 @@ public class Courses {
 		JsonPath j=new JsonPath(tokenResponse);
 		String token=j.get("access_token");
 	
-String response =given().log().all().queryParam("access_token", token).header("Content-Type","application/json")
+		AppResponse response =given().log().all().queryParam("access_token", token).header("Content-Type","application/json")
+				.expect().defaultParser(Parser.JSON)
 .when().get("https://rahulshettyacademy.com/getCourse.php")
-	.then().assertThat().statusCode(200).extract().response().asString();
-	System.out.println(response);
+	.then().assertThat().statusCode(200).extract().response().as(AppResponse.class);
+		
+	response.getInstructor();
 	
-	JsonPath j1 = new JsonPath(response);
-	
-	String instructor = j1.get("instructor");
-	System.out.println("instructor name:"+instructor);
-	
-	String URL = j1.get("url");
-	System.out.println("url:"+URL);
-
-	String services = j1.get("services");
-	System.out.println("service:"+services);
-	
-	String expertise = j1.get("expertise");
-	System.out.println("expertise:"+expertise);
-	
-	 int  size1 = j1.get("courses.webAutomation.size()");
-	 int  size2 = j1.get("courses.api.size()");
-	 int  size3 = j1.get("courses.mobile.size()");
-	 
-	for (int i = 0; i <size1; i++) {
-		System.out.println( j1.get("courses.webAutomation["+i+"].courseTitle"));
-		System.out.println( j1.get("courses.webAutomation["+i+"].price"));
-		}
-	for (int i = 0; i <size2; i++) {
-		System.out.println( j1.get("courses.api["+i+"].courseTitle"));
-		System.out.println(j1.get("courses.api["+i+"].price"));
+	org.pojo.Courses c = response.getCourses();
+	List<webAutomation> l=c.getWebAutomation();
+	 for (int i = 0; i < l.size(); i++) {
+		System.out.println(l.get(i).getCourseTitle());
 	}
-	for (int i = 0; i <size3; i++) {
-		System.out.println(j1.get("courses.mobile["+i+"].courseTitle"));
-	    System.out.println( j1.get("courses.mobile["+i+"].price"));
-}
-	System.out.println( j1.get("linkedIn"));
-	
-	
 	}}
